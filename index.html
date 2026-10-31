@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إدارة الأسطول</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--ink:#0f2a3d;--ink2:#1b3d56;--sig:#f5b301;--bg:#eef2f5;--card:#fff;--tx:#14232f;--mu:#6b7c88;--ln:#dbe3e9;--ok:#13805f;--bad:#c2372b;--warn:#b7791f}
+*{box-sizing:border-box}body{margin:0;font:15px/1.6 'IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);color:var(--tx)}
+button,input,select,textarea{font:inherit}
+.app{display:flex;min-height:100vh}
+nav{width:230px;background:var(--ink);color:#cfe0ec;padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+nav h1{font-size:18px;color:#fff;margin:0 8px 16px;display:flex;align-items:center;gap:8px}
+nav h1:before{content:"";width:6px;height:22px;background:var(--sig);border-radius:3px}
+nav a{padding:9px 12px;border-radius:8px;cursor:pointer;display:flex;gap:10px;color:inherit}
+nav a:hover{background:var(--ink2)}nav a.on{background:var(--sig);color:var(--ink);font-weight:700}
+nav .out{margin-top:auto;font-size:13px;opacity:.8}
+main{flex:1;padding:24px;min-width:0}
+.top{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap}.top h2{margin:0;flex:1;font-size:22px}
+.btn{background:var(--ink);color:#fff;border:0;padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:500}
+.btn.sig{background:var(--sig);color:var(--ink);font-weight:700}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--ln)}.btn.sm{padding:4px 10px;font-size:13px}.btn.red{background:var(--bad)}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--ln);border-radius:8px;background:#fff}
+input:focus,select:focus,textarea:focus,.btn:focus-visible,nav a:focus-visible{outline:2px solid var(--sig);outline-offset:1px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.k{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:14px 16px}.k b{display:block;font-size:26px}.k span{color:var(--mu);font-size:13px}
+.k.hot{background:var(--ink);color:#fff;border:0}.k.hot span{color:#9fb7c8}.k.hot b{color:var(--sig)}
+.box{background:var(--card);border:1px solid var(--ln);border-radius:12px;overflow:auto}
+table{width:100%;border-collapse:collapse}th,td{padding:10px 14px;text-align:right;border-bottom:1px solid var(--ln);white-space:nowrap}
+th{background:#f6f9fb;color:var(--mu);font-weight:500;font-size:13px}tr:last-child td{border:0}
+.b{padding:2px 10px;border-radius:99px;font-size:12.5px;background:#fdf3d8;color:var(--warn)}.b.g{background:#dff3ec;color:var(--ok)}.b.r{background:#fbe3e0;color:var(--bad)}
+.empty{padding:40px;text-align:center;color:var(--mu)}
+.ov{position:fixed;inset:0;background:#0f2a3d99;display:flex;align-items:center;justify-content:center;padding:14px;z-index:9}
+.md{background:#fff;border-radius:14px;width:min(640px,100%);max-height:92vh;overflow:auto;padding:20px}
+.md h3{margin:0 0 14px}.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fg label{font-size:13px;color:var(--mu);display:block}.fg .w{grid-column:1/-1}
+.ft{display:flex;gap:8px;margin-top:16px;justify-content:flex-start}
+#toast{position:fixed;bottom:18px;left:18px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:99}
+.login{max-width:360px;margin:12vh auto;background:#fff;padding:28px;border-radius:14px;border:1px solid var(--ln)}.login h1{margin:0 0 4px}.login p{color:var(--mu);margin:0 0 18px}.login input{margin-bottom:10px}
+.hist h4{margin:14px 0 6px}.hist li{font-size:14px;color:var(--mu)}
+@media(max-width:760px){.app{flex-direction:column}nav{width:100%;height:auto;position:static;flex-direction:row;overflow-x:auto;padding:10px}nav h1,nav .out{display:none}nav a{white-space:nowrap}.fg{grid-template-columns:1fr}main{padding:14px}}
+@media print{nav,.top .btn,.noprint{display:none!important}main{padding:0}body{background:#fff}}
+</style>
+</head>
+<body>
+<div id="root"></div><div id="toast"></div>
+<script>
+/* ====== 1) ضع بيانات Supabase هنا ====== */
+const SB_URL='PASTE_PROJECT_URL', SB_KEY='PASTE_ANON_PUBLIC_KEY';
+/* ======================================= */
+const db=supabase.createClient(SB_URL,SB_KEY);
+const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',3200)};
+// حقل: [المفتاح، الاسم، النوع، إلزامي، خيارات | [جدول، عمود العرض]]
+const ST=['عاملة','متوقفة','في الصيانة','حادث'];
+const S={
+ vehicles:{t:'السيارات',i:'🚗',c:['plate','model','status','odometer'],f:[['plate','رقم اللوحة','text',1],['model','الماركة / الموديل','text',1],['year','سنة الصنع','number'],['status','الحالة','select',0,ST],['odometer','قراءة العداد (كم)','number'],['notes','ملاحظات','area']]},
+ drivers:{t:'السائقون والتفويضات',i:'🪪',c:['name','iqama_no','absher_phone','auth_status'],f:[['name','اسم السائق','text',1],['iqama_no','رقم الإقامة','text'],['birth_date','تاريخ الميلاد','date'],['absher_phone','جوال أبشر','text'],['iqama_img','صورة الإقامة','file'],['license_img','صورة رخصة القيادة','file'],['auth_status','حالة التفويض','select',0,['قيد الاستكمال','تم التفويض','ملغي']],['notes','ملاحظات','area']]},
+ handovers:{t:'الاستلام والتسليم',i:'🔑',c:['vehicle_id','driver_id','kind','date','odometer','fuel','signed'],f:[['vehicle_id','السيارة','ref',1,['vehicles','plate']],['driver_id','السائق','ref',1,['drivers','name']],['kind','النوع','select',1,['استلام','تسليم']],['date','التاريخ','date'],['odometer','قراءة العداد','number'],['fuel','مستوى الوقود','select',0,['فارغ','ربع','نصف','ثلاثة أرباع','ممتلئ']],['accessories','الملحقات والمعدات (إطار احتياطي، طفاية…)','area'],['damages','المخالفات / الأضرار الموجودة','area'],['photos_img','صورة السيارة (الجهات الأربع)','file'],['signed','توقيع السائق على المحضر','select',0,['نعم','لا']]]},
+ incidents:{t:'الحوادث والمطالبات',i:'⚠️',c:['vehicle_id','driver_id','date','najm_ref','status','repair_cost','driver_share'],f:[['vehicle_id','السيارة','ref',1,['vehicles','plate']],['driver_id','السائق','ref',0,['drivers','name']],['date','تاريخ الحادث','date'],['najm_ref','رقم بلاغ نجم / المرور','text'],['insurer','شركة التأمين','text'],['status','حالة الملف','select',0,['مفتوح','قيد الإصلاح','بانتظار التعويض','مغلق']],['repair_cost','تكلفة الإصلاح','number'],['driver_share','التحمل المالي','number'],['report_img','تقرير الحادث','file'],['notes','ملاحظات','area']]},
+ invoices:{t:'الفواتير والمصاريف',i:'🧾',c:['vehicle_id','supplier','category','invoice_no','date','amount','status'],f:[['vehicle_id','السيارة','ref',1,['vehicles','plate']],['supplier','المورد','text',1],['category','التصنيف','select',0,['صيانة','قطع غيار','إطارات','زيوت','بطاريات','وقود','أخرى']],['invoice_no','رقم الفاتورة','text'],['date','التاريخ','date'],['amount','المبلغ','number',1],['status','الحالة','select',0,['قيد المراجعة','معتمدة','مصروفة','مرفوضة']],['file_img','صورة الفاتورة','file'],['notes','ملاحظات','area']]},
+ fines:{t:'المخالفات المرورية',i:'🚦',c:['vehicle_id','driver_id','date','amount','status'],f:[['vehicle_id','السيارة','ref',1,['vehicles','plate']],['driver_id','السائق المسؤول','ref',0,['drivers','name']],['date','التاريخ','date'],['amount','المبلغ','number'],['status','الحالة','select',0,['غير مسددة','مسددة']],['notes','ملاحظات','area']]}
+};
+const D={}, L={}; // D=data, L=labels
+Object.values(S).forEach(s=>s.f.forEach(f=>L[f[0]]=f[1])); L.plate='رقم اللوحة';
+const GOOD=['عاملة','تم التفويض','مسددة','مغلق','معتمدة','مصروفة','نعم'],BAD=['حادث','متوقفة','غير مسددة','مرفوضة','ملغي','مفتوح','لا'];
+let page='dash';
+
+async function load(k){const{data,error}=await db.from(k).select('*').order('created_at',{ascending:false});if(error)toast(error.message);D[k]=data||[]}
+const loadAll=()=>Promise.all(Object.keys(S).map(load));
+const nm=(r,id)=>{const o=(D[r[0]]||[]).find(x=>x.id===id);return o?o[r[1]]:'—'};
+
+function cell(f,v){
+ if(v==null||v==='')return '—';
+ if(f[2]==='ref')return esc(nm(f[4],v));
+ if(f[2]==='file')return `<a href="${esc(v)}" target="_blank" rel="noopener">عرض</a>`;
+ if(f[2]==='select')return `<span class="b ${GOOD.includes(v)?'g':BAD.includes(v)?'r':''}">${esc(v)}</span>`;
+ return esc(v);
+}
+
+/* ---------- الشاشة الرئيسية ---------- */
+function shell(h){
+ $('#root').innerHTML=`<div class="app"><nav><h1>إدارة الأسطول</h1>
+ <a data-p="dash" class="${page=='dash'?'on':''}" tabindex=0>📊 لوحة التحكم</a>
+ ${Object.entries(S).map(([k,s])=>`<a data-p="${k}" tabindex=0 class="${page==k?'on':''}">${s.i} ${s.t}</a>`).join('')}
+ <a data-p="report" tabindex=0 class="${page=='report'?'on':''}">📑 التقرير الشهري</a>
+ <a class="out" id="lo">تسجيل الخروج</a></nav><main>${h}</main></div>`;
+ document.querySelectorAll('nav a[data-p]').forEach(a=>a.onclick=()=>{page=a.dataset.p;render()});
+ $('#lo').onclick=()=>db.auth.signOut();
+}
+const sum=(a,k)=>a.reduce((s,x)=>s+(+x[k]||0),0), money=n=>(+n).toLocaleString('ar-EG')+' ر.س';
+const inM=(a,m)=>a.filter(x=>(x.date||'').startsWith(m));
+
+function stats(m){
+ const V=D.vehicles,w=V.filter(v=>v.status=='عاملة').length,inc=inM(D.incidents,m),inv=inM(D.invoices,m),fn=inM(D.fines,m),h=inM(D.handovers,m);
+ return{total:V.length,work:w,stop:V.length-w,out:h.filter(x=>x.kind=='تسليم').length,inn:h.filter(x=>x.kind=='استلام').length,
+  inc:inc.length,incCost:sum(inc,'repair_cost'),maint:sum(inv.filter(x=>['صيانة','قطع غيار','إطارات','زيوت','بطاريات'].includes(x.category)),'amount'),
+  inv:sum(inv,'amount'),fines:fn.length,finesAmt:sum(fn,'amount'),util:V.length?Math.round(w/V.length*100):0,
+  need:V.filter(v=>['في الصيانة','حادث'].includes(v.status)).length}
+}
+function dash(){
+ const m=new Date().toISOString().slice(0,7),s=stats(m);
+ shell(`<div class="top"><h2>لوحة التحكم</h2></div><div class="kpis">
+ <div class="k hot"><span>نسبة تشغيل الأسطول</span><b>${s.util}%</b></div>
+ <div class="k"><span>إجمالي السيارات</span><b>${s.total}</b></div>
+ <div class="k"><span>عاملة / متوقفة</span><b>${s.work} / ${s.stop}</b></div>
+ <div class="k"><span>حوادث هذا الشهر</span><b>${s.inc}</b></div>
+ <div class="k"><span>تكلفة الحوادث</span><b>${money(s.incCost)}</b></div>
+ <div class="k"><span>فواتير الموردين</span><b>${money(s.inv)}</b></div>
+ <div class="k"><span>مخالفات غير مسددة</span><b>${D.fines.filter(x=>x.status!='مسددة').length}</b></div>
+ <div class="k"><span>سائقون بتفويض ناقص</span><b>${D.drivers.filter(x=>x.auth_status!='تم التفويض').length}</b></div></div>
+ <div class="top"><h2 style="font-size:17px">حوادث مفتوحة</h2></div>${tbl('incidents',D.incidents.filter(x=>x.status!='مغلق').slice(0,8),0)}`);
+}
+
+/* ---------- جدول عام ---------- */
+function tbl(k,rows,act=1){
+ const s=S[k],F=Object.fromEntries(s.f.map(f=>[f[0],f]));
+ if(!rows.length)return `<div class="box empty">لا توجد بيانات بعد${act?'. اضغط «إضافة» لإنشاء أول سجل.':''}</div>`;
+ return `<div class="box"><table><tr>${s.c.map(c=>`<th>${L[c]}</th>`).join('')}${act?'<th></th>':''}</tr>${rows.map(r=>`<tr>${s.c.map((c,i)=>`<td>${k=='vehicles'&&i==0?`<a href="#" data-h="${r.id}"><b>${esc(r[c])}</b></a>`:cell(F[c],r[c])}</td>`).join('')}${act?`<td><button class="btn ghost sm" data-e="${r.id}">تعديل</button> <button class="btn red sm" data-d="${r.id}">حذف</button></td>`:''}</tr>`).join('')}</table></div>`;
+}
+function list(k){
+ const s=S[k];
+ shell(`<div class="top"><h2>${s.t}</h2><input id="q" placeholder="بحث…" style="width:220px"><button class="btn sig" id="add">+ إضافة</button></div><div id="tb"></div>`);
+ const draw=()=>{const q=$('#q').value.trim();$('#tb').innerHTML=tbl(k,D[k].filter(r=>!q||JSON.stringify(Object.values(r)).includes(q)||s.f.some(f=>f[2]=='ref'&&nm(f[4],r[f[0]]).includes?.(q))));
+  $('#tb').querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>form(k,D[k].find(x=>x.id==b.dataset.e)));
+  $('#tb').querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{if(!confirm('حذف هذا السجل نهائيًا؟'))return;const{error}=await db.from(k).delete().eq('id',b.dataset.d);if(error)return toast(error.message);toast('تم الحذف');await load(k);draw()});
+  $('#tb').querySelectorAll('[data-h]').forEach(a=>a.onclick=e=>{e.preventDefault();history(a.dataset.h)})};
+ $('#q').oninput=draw;$('#add').onclick=()=>form(k);draw();
+}
+
+/* ---------- نموذج الإضافة / التعديل ---------- */
+function modal(h){const o=document.createElement('div');o.className='ov';o.innerHTML=`<div class="md">${h}</div>`;o.onclick=e=>{if(e.target==o)o.remove()};document.body.append(o);return o}
+function form(k,r={}){
+ const s=S[k];
+ const inp=f=>{const[key,lb,t,req,o]=f,v=r[key]??'';
+  const w=['area'].includes(t)?' w':'';let el;
+  if(t=='select')el=`<select id="f_${key}"><option value="">—</option>${o.map(x=>`<option ${x==v?'selected':''}>${x}</option>`).join('')}</select>`;
+  else if(t=='ref')el=`<select id="f_${key}"><option value="">— اختر —</option>${D[o[0]].map(x=>`<option value="${x.id}" ${x.id==v?'selected':''}>${esc(x[o[1]])}</option>`).join('')}</select>`;
+  else if(t=='area')el=`<textarea id="f_${key}" rows=2>${esc(v)}</textarea>`;
+  else if(t=='file')el=`<input id="f_${key}" type="file" accept="image/*,.pdf">${v?`<a href="${esc(v)}" target=_blank>الملف الحالي</a>`:''}`;
+  else el=`<input id="f_${key}" type="${t}" value="${esc(v)}">`;
+  return `<div class="${w}"><label>${lb}${req?' *':''}</label>${el}</div>`};
+ const o=modal(`<h3>${r.id?'تعديل':'إضافة'} — ${s.t}</h3><div class="fg">${s.f.map(inp).join('')}</div><div class="ft"><button class="btn sig" id="sv">حفظ</button><button class="btn ghost" id="cx">إلغاء</button></div>`);
+ o.querySelector('#cx').onclick=()=>o.remove();
+ o.querySelector('#sv').onclick=async e=>{
+  e.target.disabled=true;const row={};
+  for(const f of s.f){const el=o.querySelector('#f_'+f[0]);let v=el.value;
+   if(f[3]&&!v&&f[2]!='file'){e.target.disabled=false;return toast('أكمل الحقول المطلوبة: '+f[1])}
+   if(f[2]=='file'){const file=el.files[0];if(!file)continue;
+    const p=`${k}/${crypto.randomUUID()}_${file.name.replace(/[^\w.]/g,'_')}`;const u=await db.storage.from('docs').upload(p,file);
+    if(u.error){e.target.disabled=false;return toast(u.error.message)}v=db.storage.from('docs').getPublicUrl(p).data.publicUrl}
+   row[f[0]]=v===''?null:v}
+  const{error}=r.id?await db.from(k).update(row).eq('id',r.id):await db.from(k).insert(row);
+  if(error){e.target.disabled=false;return toast(error.code=='23505'?'هذا السجل موجود مسبقًا':error.message)}
+  o.remove();toast('تم الحفظ');await load(k);render();
+ };
+}
+
+/* ---------- ملف السيارة ---------- */
+function history(id){
+ const v=D.vehicles.find(x=>x.id==id),by=k=>D[k].filter(x=>x.vehicle_id==id);
+ const ul=(k,fn)=>`<ul>${by(k).map(x=>`<li>${fn(x)}</li>`).join('')||'<li>لا يوجد</li>'}</ul>`;
+ const tot=sum(by('invoices'),'amount')+sum(by('incidents'),'repair_cost')+sum(by('fines'),'amount');
+ modal(`<h3>ملف السيارة ${esc(v.plate)} — ${esc(v.model)}</h3><div class="kpis"><div class="k hot"><span>إجمالي التكاليف</span><b>${money(tot)}</b></div><div class="k"><span>العداد</span><b>${v.odometer??'—'}</b></div></div><div class="hist">
+ <h4>الاستلام والتسليم</h4>${ul('handovers',x=>`${x.date} — ${x.kind} — ${esc(nm(['drivers','name'],x.driver_id))}`)}
+ <h4>الحوادث</h4>${ul('incidents',x=>`${x.date} — ${esc(x.status)} — ${money(x.repair_cost||0)}`)}
+ <h4>الفواتير</h4>${ul('invoices',x=>`${x.date} — ${esc(x.supplier)} (${esc(x.category||'')}) — ${money(x.amount||0)}`)}
+ <h4>المخالفات</h4>${ul('fines',x=>`${x.date} — ${money(x.amount||0)} — ${esc(x.status)}`)}</div>`);
+}
+
+/* ---------- التقرير الشهري ---------- */
+function report(){
+ const m=window._m||new Date().toISOString().slice(0,7),s=stats(m);
+ const rows=[['إجمالي عدد السيارات',s.total],['السيارات العاملة',s.work],['السيارات المتوقفة',s.stop],['سيارات تم تسليمها',s.out],['سيارات تم استلامها',s.inn],['عدد الحوادث',s.inc],['تكاليف الحوادث والإصلاحات',money(s.incCost)],['إجمالي مصاريف الصيانة',money(s.maint)],['إجمالي فواتير الموردين',money(s.inv)],['المخالفات المرورية',`${s.fines} (${money(s.finesAmt)})`],['سيارات تحتاج صيانة / تجديد',s.need],['نسبة الاستفادة من الأسطول',s.util+'%']];
+ const pv=D.vehicles.map(v=>{const i=sum(inM(D.invoices,m).filter(x=>x.vehicle_id==v.id),'amount'),c=sum(inM(D.incidents,m).filter(x=>x.vehicle_id==v.id),'repair_cost'),f=sum(inM(D.fines,m).filter(x=>x.vehicle_id==v.id),'amount');return[v.plate,i,c,f,i+c+f]});
+ shell(`<div class="top"><h2>التقرير الشهري للأسطول</h2><input type="month" id="mm" value="${m}" style="width:170px" class="noprint"><button class="btn sig" onclick="print()">طباعة / PDF</button></div>
+ <div class="box" style="margin-bottom:18px"><table>${rows.map(r=>`<tr><td>${r[0]}</td><td><b>${r[1]}</b></td></tr>`).join('')}</table></div>
+ <div class="top"><h2 style="font-size:17px">التكلفة لكل سيارة</h2></div><div class="box"><table><tr><th>اللوحة</th><th>فواتير</th><th>حوادث</th><th>مخالفات</th><th>الإجمالي</th></tr>${pv.map(r=>`<tr><td><b>${esc(r[0])}</b></td><td>${money(r[1])}</td><td>${money(r[2])}</td><td>${money(r[3])}</td><td><b>${money(r[4])}</b></td></tr>`).join('')}</table></div>`);
+ $('#mm').onchange=e=>{window._m=e.target.value;report()};
+}
+
+function render(){page=='dash'?dash():page=='report'?report():list(page)}
+
+/* ---------- تسجيل الدخول ---------- */
+function login(){
+ $('#root').innerHTML=`<div class="login"><h1>إدارة الأسطول</h1><p>سجّل دخولك للمتابعة</p><input id="em" type="email" placeholder="البريد الإلكتروني" dir="ltr"><input id="pw" type="password" placeholder="كلمة المرور" dir="ltr"><button class="btn sig" id="go" style="width:100%">دخول</button></div>`;
+ $('#go').onclick=async()=>{const{error}=await db.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});if(error)toast('البريد أو كلمة المرور غير صحيحة')};
+ $('#pw').onkeydown=e=>e.key=='Enter'&&$('#go').click();
+}
+db.auth.onAuthStateChange(async(_,ses)=>{if(ses){await loadAll();render()}else login()});
+</script>
+</body>
+</html>
