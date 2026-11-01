@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Anan Capital | إدارة الأسطول</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
 :root{--ink:#0c2233;--ink2:#17364d;--ink3:#24506f;--sig:#f15a22;--bg:#f1f4f7;--card:#fff;--tx:#12212d;--mu:#667a89;--ln:#e0e7ed;--ok:#0f8a64;--bad:#cf3a2e;--warn:#b7791f;--sh:0 1px 2px #0c223312,0 4px 14px #0c22330a}
@@ -57,7 +58,19 @@ th{background:#f7f9fb;color:var(--mu);font-weight:600;font-size:12.5px}tr:last-c
 .lg2{position:absolute;top:18px;inset-inline-end:18px}
 .hist h4{margin:16px 0 6px}.hist li{font-size:14px;color:var(--mu)}
 .brandbox{background:var(--sig);border-radius:14px;padding:14px;margin:0 2px 16px;display:flex;justify-content:center}.brandbox img{height:40px}.lgbig{width:240px;max-width:70%}.who{margin:0 6px 14px;color:#fff;font-size:13.5px;font-weight:600}.who small{display:block;color:#8fb0c6;font-weight:400}.cf{margin:0 2px 14px;background:var(--ink2);color:#fff;border-color:var(--ink3);width:calc(100% - 4px)}
-@media(max-width:860px){.hero{grid-template-columns:1fr}.lw{grid-template-columns:1fr}.lb{display:none}}
+.att label{display:block;font-size:12.5px;color:var(--mu);font-weight:600;margin-bottom:6px}.ai{display:flex;gap:8px;align-items:center;margin-bottom:6px}.ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:8px 0 14px}.ig>div{background:var(--bg);border-radius:12px;padding:8px 12px}.ig small{display:block;color:var(--mu);font-size:12px}.ig b{font-size:14px}.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.chip{padding:6px 14px;border-radius:99px;border:1px solid var(--ln);background:#fff;cursor:pointer;font-size:13px;font-weight:600}.chip.on{background:var(--sig);border-color:var(--sig);color:#fff}.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}.al-i{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--ln)}.al-i:last-child{border:0}
+.btn{transition:transform .12s,filter .12s}.btn:hover{transform:translateY(-1px)}
+.card,.box{border-radius:20px}
+.nt{width:34px;height:34px;border-radius:11px;display:inline-grid;place-items:center;background:var(--c);color:#fff;box-shadow:0 5px 12px -4px var(--c);transition:transform .15s;flex:none}
+nav a{padding:6px 10px;border-radius:14px}nav a:hover .nt{transform:rotate(-8deg) scale(1.1)}nav a.on .nt{box-shadow:0 0 0 3px #ffffff33}
+.k .ci{width:50px;height:50px;border-radius:16px;background:var(--f,#24506f);color:#fff;box-shadow:0 8px 16px -6px var(--f)}
+.empty .nt{width:72px;height:72px;border-radius:24px;margin:0 auto 12px}
+.drop{display:flex;flex-direction:column;align-items:center;gap:6px;padding:42px 20px;border:2px dashed #f4b9a0;border-radius:24px;background:#fff7f3;cursor:pointer;color:var(--sig);text-align:center}.drop:hover,.drop.hov{background:#ffeee6}.drop b{color:var(--tx);font-size:16px}.drop span{color:var(--mu);font-size:13px}
+.blk{padding:16px;margin-top:12px}.blk.off{opacity:.55}.bh{display:flex;gap:12px;align-items:center}.bh>div{flex:1}.bh small{display:block;color:var(--mu)}.bh select{width:auto;min-width:170px}
+.map{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:14px}.mc small{display:block;color:var(--mu);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc select{padding:6px 8px;font-size:13px}
+.pad{padding:16px}.lab{display:block;font-size:12.5px;color:var(--mu);font-weight:600;margin-bottom:4px}.ck input{width:18px;height:18px;accent-color:var(--sig)}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.res .card{padding:16px}.res h4{margin:10px 0 6px}.res p{margin:0;color:var(--mu);font-size:13.5px}.errs{margin-top:14px;padding:14px;color:var(--bad);font-size:13px}
+@media(max-width:860px){.hero{grid-template-columns:1fr}.two{grid-template-columns:1fr}.lw{grid-template-columns:1fr}.lb{display:none}}
 @media(max-width:760px){.app{flex-direction:column}nav{width:100%;height:auto;position:static;flex-direction:row;overflow-x:auto;padding:10px}.brand,.sp,.sec{display:none}nav a{white-space:nowrap}.fg{grid-template-columns:1fr}main{padding:16px}}
 @media print{nav,.noprint{display:none!important}main{padding:0}body{background:#fff}.box,.card{box-shadow:none}}
 </style>
@@ -91,7 +104,10 @@ print:'<path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2
 file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/>',
 wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94Z"/>',
 inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/>'};
-const ic=(n,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
+const ic=(n,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="currentColor" fill-opacity=".22" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
+Object.assign(I,{shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',paperclip:'<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'});
+Object.assign(I,{upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/>',download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',check:'<path d="M20 6 9 17l-5-5"/>',sheet:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>'});
+const NC={dash:'#f15a22',vehicles:'#3b82f6',drivers:'#8b5cf6',handovers:'#14b8a6',incidents:'#ef4444',invoices:'#f59e0b',fines:'#ec4899',report:'#22c55e',documents:'#06b6d4',users:'#0ea5e9',import:'#fb923c'};
 const U={app:'إدارة الأسطول|Fleet Manager',dash:'لوحة التحكم|Dashboard',report:'التقرير الشهري|Monthly Report',logout:'تسجيل الخروج|Sign out',add:'إضافة|Add',edit:'تعديل|Edit',del:'حذف|Delete',save:'حفظ|Save',cancel:'إلغاء|Cancel',search:'بحث…|Search…',view:'عرض|View',
 empty:'لا توجد بيانات بعد. اضغط «إضافة» لإنشاء أول سجل.|No records yet. Click “Add” to create the first one.',none:'لا يوجد|None',util:'نسبة تشغيل الأسطول|Fleet utilization',fleetStatus:'حالة الأسطول|Fleet status',
 total:'إجمالي السيارات|Total vehicles',inc:'حوادث هذا الشهر|Incidents this month',incCost:'تكلفة الحوادث|Incident costs',inv:'فواتير الموردين|Supplier invoices',fines:'مخالفات غير مسددة|Unpaid fines',auth:'تفويضات ناقصة|Incomplete authorizations',
@@ -102,20 +118,24 @@ file:'ملف السيارة|Vehicle file',totalCost:'إجمالي التكالي
 cInv:'فواتير|Invoices',cInc:'حوادث|Incidents',cFine:'مخالفات|Fines',cTot:'الإجمالي|Total',choose:'— اختر —|— Select —',curFile:'الملف الحالي|Current file',
 r_total:'إجمالي عدد السيارات|Total vehicles',r_work:'السيارات العاملة|Active vehicles',r_stop:'السيارات المتوقفة|Inactive vehicles',r_out:'سيارات تم تسليمها|Vehicles handed over',r_in:'سيارات تم استلامها|Vehicles received',r_inc:'عدد الحوادث|Number of incidents',r_incc:'تكاليف الحوادث والإصلاحات|Incident & repair costs',r_maint:'إجمالي مصاريف الصيانة|Total maintenance cost',r_inv:'إجمالي فواتير الموردين|Total supplier invoices',r_fines:'المخالفات المرورية|Traffic fines',r_need:'سيارات تحتاج صيانة / تجديد|Vehicles needing service',r_util:'نسبة الاستفادة من الأسطول|Fleet utilization rate',
 hs:'الاستلام والتسليم|Handovers',users:'المستخدمون|Users',all:'كل المدن|All cities',name:'الاسم|Name',role:'الدور|Role',noacc:'لا توجد صلاحية|No access',noaccSub:'حسابك غير مرتبط بأي صلاحية. تواصل مع مدير النظام.|Your account has no assigned role. Contact the administrator.',signupFail:'تم حفظ المستخدم لكن فشل إنشاء الحساب: |User saved but account creation failed: '};
+Object.assign(U,{expired:'منتهية|Expired',days:'يوم|days',attach:'مرفقات (صور، PDF، Excel)|Attachments (images, PDF, Excel)',alerts:'تنبيهات التجديد|Renewal alerts',trend:'التكاليف آخر 6 شهور|Costs, last 6 months',allf:'الكل|All',s_rent:'إيجار شهري متعاقد|Contracted monthly rent',s_lease:'عقود تنتهي خلال 60 يوم|Leases ending in 60 days',s_auth:'تم التفويض|Authorized',s_pend:'قيد الاستكمال|Pending',s_total:'الإجمالي|Total',s_exp:'منتهية|Expired',s_soon:'تنتهي خلال 30 يوم|Expiring in 30 days',s_valid:'سارية|Valid',s_unsigned:'بدون توقيع|Unsigned',s_open:'مفتوحة|Open',s_repair:'تكلفة الإصلاح|Repair cost',s_share:'التحمل المالي|Driver share',s_rev:'قيد المراجعة|Under review',s_rentinv:'فواتير الإيجار|Rent invoices',s_sum:'إجمالي المبالغ|Total amount',s_unpaid:'غير مسددة|Unpaid',s_unpaidamt:'مبلغ غير مسدد|Unpaid amount',k_rent:'الإيجار الشهري المتعاقد|Contracted monthly rent',k_docs:'وثائق تحتاج تجديد|Documents to renew',r_rent:'فواتير الإيجار (المؤجر)|Rent invoices (lessor)',r_contract:'الإيجار الشهري المتعاقد عليه|Contracted monthly rent',r_docs:'وثائق منتهية أو قاربت|Documents expired / expiring',r_lease:'عقود تنتهي خلال 60 يوم|Leases ending in 60 days',leaseInfo:'بيانات عقد الإيجار التشغيلي|Operating lease details',docsT:'الوثائق والتراخيص|Documents & licenses',import:'استيراد البيانات|Import Data',tmpl:'تحميل نموذج Excel|Download Excel template',drop:'اسحب ملف Excel هنا أو اضغط للاختيار|Drop an Excel file here or click to browse',dropSub:'xlsx / xls / csv — بأي شكل أعمدة، والنظام يرتّب كل حاجة|xlsx / xls / csv — any column layout, the system sorts it out',impCity:'مدينة البيانات المستوردة|City of imported data',found:'اللي لقيناه في الملف|What we found in your file',startImp:'ابدأ الاستيراد|Start import',rows:'صف|rows',ignore:'— تجاهل —|— Ignore —',assign:'نوع البيانات…|Data type…',nothing:'اختر شيت واحد على الأقل|Select at least one sheet',pickCity:'اختر مدينة الاستيراد|Select the import city',noPlate:'رقم اللوحة ناقص|Missing plate no.',noKey:'بيانات التعريف ناقصة|Missing identifying data',impDone:'تم الاستيراد|Import complete',i_ins:'جديد|New',i_upd:'محدّث|Updated',i_skip:'متخطى (مكرر)|Skipped (duplicate)',i_err:'أخطاء|Errors',again:'استيراد ملف آخر|Import another file',reading:'جاري قراءة الملف…|Reading file…',unrec:'لم نتعرف على الشيت، حدد نوعه|Not recognized, choose its type'});
 const t=k=>p(U[k]);
 const ST=['عاملة|Active','متوقفة|Stopped','في الصيانة|In maintenance','حادث|Accident'];
 // حقل: [المفتاح, 'عربي|English', النوع, إلزامي, خيارات]
 const CITIES=['الرياض|Riyadh','جدة|Jeddah','مكة المكرمة|Makkah','المدينة المنورة|Madinah','الدمام|Dammam','الخبر|Khobar','الظهران|Dhahran','الأحساء|Al Ahsa','الجبيل|Jubail','القطيف|Qatif','بريدة|Buraydah','الطائف|Taif','تبوك|Tabuk','أبها|Abha','خميس مشيط|Khamis Mushait','حائل|Hail','جازان|Jazan','نجران|Najran','ينبع|Yanbu','الخرج|Al Kharj'];const RL={admin:'مدير النظام|Admin',supervisor:'مشرف|Supervisor'};
 const S={
-vehicles:{t:'السيارات|Vehicles',i:'car',c:['plate','model','status','odometer'],f:[['plate','رقم اللوحة|Plate no.','text',1],['city','المدينة|City','select',1,CITIES],['model','الماركة / الموديل|Make / Model','text',1],['year','سنة الصنع|Year','number'],['status','الحالة|Status','select',0,ST],['odometer','قراءة العداد (كم)|Odometer (km)','number'],['notes','ملاحظات|Notes','area']]},
+vehicles:{t:'السيارات|Vehicles',i:'car',c:['plate','model','status','lessor','lease_end','monthly_rent'],f:[['plate','رقم اللوحة|Plate no.','text',1],['city','المدينة|City','select',1,CITIES],['model','الماركة / الموديل|Make / Model','text',1],['year','سنة الصنع|Year','number'],['status','الحالة|Status','select',0,ST],['odometer','قراءة العداد (كم)|Odometer (km)','number'],['lessor','شركة التأجير (المؤجر)|Lessor company','text'],['contract_no','رقم عقد الإيجار|Lease contract no.','text'],['lease_start','بداية العقد|Lease start','date'],['lease_end','نهاية العقد|Lease end','date'],['monthly_rent','الإيجار الشهري|Monthly rent','number'],['chassis_no','رقم الهيكل|Chassis no.','text'],['notes','ملاحظات|Notes','area']]},
 drivers:{t:'السائقون والتفويضات|Drivers & Authorizations',i:'users',c:['name','iqama_no','absher_phone','auth_status'],f:[['name','اسم السائق|Driver name','text',1],['city','المدينة|City','select',1,CITIES],['iqama_no','رقم الإقامة|Iqama no.','text'],['birth_date','تاريخ الميلاد|Date of birth','date'],['absher_phone','جوال أبشر|Absher mobile','text'],['iqama_img','صورة الإقامة|Iqama photo','file'],['license_img','صورة رخصة القيادة|Driving license photo','file'],['auth_status','حالة التفويض|Authorization','select',0,['قيد الاستكمال|Pending','تم التفويض|Authorized','ملغي|Cancelled']],['notes','ملاحظات|Notes','area']]},
+documents:{t:'الوثائق والتراخيص|Documents & Licenses',i:'shield',c:['vehicle_id','driver_id','doc_type','doc_no','issue_date','expiry_date'],f:[['vehicle_id','السيارة|Vehicle','ref',0,['vehicles','plate']],['driver_id','السائق|Driver','ref',0,['drivers','name']],['doc_type','نوع الوثيقة|Document type','select',1,['رخصة السيارة (الاستمارة)|Vehicle registration','تأمين المركبة|Vehicle insurance','الفحص الدوري|Periodic inspection','بطاقة التشغيل|Operating card','عقد الإيجار|Lease contract','رخصة قيادة|Driving license','إقامة|Iqama','أخرى|Other']],['doc_no','رقم الوثيقة|Document no.','text'],['issue_date','تاريخ الإصدار|Issue date','date'],['expiry_date','تاريخ الانتهاء|Expiry date','date'],['file_img','ملف الوثيقة|Document file','file'],['notes','ملاحظات|Notes','area']]},
 handovers:{t:'الاستلام والتسليم|Handover & Return',i:'swap',c:['vehicle_id','driver_id','kind','date','odometer','fuel','signed'],f:[['vehicle_id','السيارة|Vehicle','ref',1,['vehicles','plate']],['driver_id','السائق|Driver','ref',1,['drivers','name']],['kind','النوع|Type','select',1,['استلام|Receive','تسليم|Hand over']],['date','التاريخ|Date','date'],['odometer','قراءة العداد|Odometer','number'],['fuel','مستوى الوقود|Fuel level','select',0,['فارغ|Empty','ربع|1/4','نصف|1/2','ثلاثة أرباع|3/4','ممتلئ|Full']],['accessories','الملحقات والمعدات (إطار احتياطي، طفاية…)|Accessories & equipment (spare tyre, extinguisher…)','area'],['damages','المخالفات / الأضرار الموجودة|Existing damages / violations','area'],['photos_img','صورة السيارة|Vehicle photo','file'],['signed','توقيع السائق على المحضر|Driver signed report','select',0,['نعم|Yes','لا|No']]]},
 incidents:{t:'الحوادث والمطالبات|Incidents & Claims',i:'alert',c:['vehicle_id','driver_id','date','najm_ref','status','repair_cost','driver_share'],f:[['vehicle_id','السيارة|Vehicle','ref',1,['vehicles','plate']],['driver_id','السائق|Driver','ref',0,['drivers','name']],['date','تاريخ الحادث|Incident date','date'],['najm_ref','رقم بلاغ نجم / المرور|Najm / Traffic report no.','text'],['insurer','شركة التأمين|Insurer','text'],['status','حالة الملف|Case status','select',0,['مفتوح|Open','قيد الإصلاح|Under repair','بانتظار التعويض|Awaiting compensation','مغلق|Closed']],['repair_cost','تكلفة الإصلاح|Repair cost','number'],['driver_share','التحمل المالي|Driver share','number'],['report_img','تقرير الحادث|Incident report','file'],['notes','ملاحظات|Notes','area']]},
-invoices:{t:'الفواتير والمصاريف|Invoices & Expenses',i:'receipt',c:['vehicle_id','supplier','category','invoice_no','date','amount','status'],f:[['vehicle_id','السيارة|Vehicle','ref',1,['vehicles','plate']],['supplier','المورد|Supplier','text',1],['category','التصنيف|Category','select',0,['صيانة|Maintenance','قطع غيار|Spare parts','إطارات|Tyres','زيوت|Oils','بطاريات|Batteries','وقود|Fuel','أخرى|Other']],['invoice_no','رقم الفاتورة|Invoice no.','text'],['date','التاريخ|Date','date'],['amount','المبلغ|Amount','number',1],['status','الحالة|Status','select',0,['قيد المراجعة|Under review','معتمدة|Approved','مصروفة|Paid','مرفوضة|Rejected']],['file_img','صورة الفاتورة|Invoice file','file'],['notes','ملاحظات|Notes','area']]},
+invoices:{t:'الفواتير والمصاريف|Invoices & Expenses',i:'receipt',c:['vehicle_id','supplier','category','invoice_no','date','amount','status'],f:[['vehicle_id','السيارة|Vehicle','ref',1,['vehicles','plate']],['supplier','المورد|Supplier','text',1],['category','التصنيف|Category','select',0,['صيانة|Maintenance','قطع غيار|Spare parts','إطارات|Tyres','زيوت|Oils','بطاريات|Batteries','وقود|Fuel','إيجار|Rent (lessor)','تأمين|Insurance','رسوم وتراخيص|Fees & licenses','أخرى|Other']],['invoice_no','رقم الفاتورة|Invoice no.','text'],['date','التاريخ|Date','date'],['amount','المبلغ|Amount','number',1],['status','الحالة|Status','select',0,['قيد المراجعة|Under review','معتمدة|Approved','مصروفة|Paid','مرفوضة|Rejected']],['file_img','صورة الفاتورة|Invoice file','file'],['notes','ملاحظات|Notes','area']]},
 fines:{t:'المخالفات المرورية|Traffic Fines',i:'gauge',c:['vehicle_id','driver_id','date','amount','status'],f:[['vehicle_id','السيارة|Vehicle','ref',1,['vehicles','plate']],['driver_id','السائق المسؤول|Responsible driver','ref',0,['drivers','name']],['date','التاريخ|Date','date'],['amount','المبلغ|Amount','number'],['status','الحالة|Status','select',0,['غير مسددة|Unpaid','مسددة|Paid']],['notes','ملاحظات|Notes','area']]}};
 const D={},L={plate:'رقم اللوحة|Plate no.'},V={};
 Object.values(S).forEach(s=>s.f.forEach(f=>{L[f[0]]=f[1];if(f[2]=='select')f[4].forEach(o=>V[o.split('|')[0]]=o)}));
 const GOOD=['عاملة','تم التفويض','مسددة','مغلق','معتمدة','مصروفة','نعم'],BAD=['حادث','متوقفة','غير مسددة','مرفوضة','ملغي','مفتوح','لا'];
+const expDays=v=>Math.ceil((new Date(v)-new Date())/864e5);
+const exp=v=>{if(!v)return '—';const d=expDays(v);return `<span class="b ${d<0?'r':d<=30?'':'g'}">${esc(v)} · ${d<0?t('expired'):d+' '+t('days')}</span>`};
 const money=n=>(+n||0).toLocaleString(lang=='ar'?'ar-SA-u-nu-latn':'en-US')+' '+t('cur');
 const dv=k=>cityF?D[k].filter(x=>x.city==cityF):D[k];const fl=k=>S[k].f.filter(f=>f[0]!='city'||isA());
 const sum=(a,k)=>a.reduce((s,x)=>s+(+x[k]||0),0),inM=(a,m)=>a.filter(x=>(x.date||'').startsWith(m));
@@ -130,6 +150,7 @@ function cell(f,v,k,first){
  if(v==null||v==='')return '—';
  if(f[2]=='ref')return esc(nm(f[4],v));
  if(f[2]=='file')return `<a href="${esc(v)}" target="_blank" rel="noopener" style="display:inline-flex;gap:5px;align-items:center">${ic('file',15)}${t('view')}</a>`;
+ if(f[0]=='expiry_date'||f[0]=='lease_end')return exp(v);
  if(f[0]=='city')return esc(p(V[v]||v));
  if(f[2]=='select')return `<span class="b ${GOOD.includes(v)?'g':BAD.includes(v)?'r':''}">${esc(p(V[v]||v))}</span>`;
  if(k=='vehicles'&&first)return `<a class="plate" href="#" data-h="">${esc(v)}</a>`;
@@ -138,10 +159,10 @@ function cell(f,v,k,first){
 }
 
 function shell(h){
- const nav=[['dash','dash',t('dash')],...Object.entries(S).map(([k,s])=>[k,s.i,p(s.t)]),['report','chart',t('report')],...(isA()?[['users','users',t('users')]]:[])];
+ const nav=[['dash','dash',t('dash')],...Object.entries(S).map(([k,s])=>[k,s.i,p(s.t)]),['report','chart',t('report')],['import','upload',t('import')],...(isA()?[['users','users',t('users')]]:[])];
  $('#root').innerHTML=`<div class="app"><nav><div class="brandbox"><img src="${LOGO}" alt="Anan Capital"></div><div class="who">${esc(prof.full_name||prof.email)}<small>${isA()?p(RL.admin):esc(p(V[prof.city]||prof.city||''))}</small></div>${isA()?`<select id="cf" class="cf" aria-label="${t('all')}"><option value="">${t('all')}</option>${CITIES.map(o=>`<option value="${o.split('|')[0]}" ${cityF==o.split('|')[0]?'selected':''}>${p(o)}</option>`).join('')}</select>`:''}
- ${nav.map(([k,i,l])=>`<a data-p="${k}" tabindex=0 class="${page==k?'on':''}">${ic(i)}${l}</a>`).join('')}
- <div class="sp"></div><a id="lg">${ic('globe')}${lang=='ar'?'English':'العربية'}</a><a id="lo">${ic('out')}${t('logout')}</a></nav><main>${h}</main></div>`;
+ ${nav.map(([k,i,l])=>`<a data-p="${k}" tabindex=0 class="${page==k?'on':''}"><span class="nt" style="--c:${NC[k]||'#64748b'}">${ic(i,18)}</span>${l}</a>`).join('')}
+ <div class="sp"></div><a id="lg"><span class="nt" style="--c:#64748b">${ic('globe',18)}</span>${lang=='ar'?'English':'العربية'}</a><a id="lo"><span class="nt" style="--c:#475569">${ic('out',18)}</span>${t('logout')}</a></nav><main>${h}</main></div>`;
  document.querySelectorAll('nav a[data-p]').forEach(a=>a.onclick=()=>{page=a.dataset.p;render()});
  $('#lo').onclick=()=>db.auth.signOut();$('#lg').onclick=()=>setLang(lang=='ar'?'en':'ar');if($('#cf'))$('#cf').onchange=e=>{cityF=e.target.value;render()};
 }
@@ -150,23 +171,29 @@ function stats(m){
  const V=dv('vehicles'),w=V.filter(v=>v.status=='عاملة').length,inc=inM(dv('incidents'),m),inv=inM(dv('invoices'),m),fn=inM(dv('fines'),m),h=inM(dv('handovers'),m);
  return{total:V.length,work:w,stop:V.length-w,out:h.filter(x=>x.kind=='تسليم').length,inn:h.filter(x=>x.kind=='استلام').length,inc:inc.length,incCost:sum(inc,'repair_cost'),
  maint:sum(inv.filter(x=>['صيانة','قطع غيار','إطارات','زيوت','بطاريات'].includes(x.category)),'amount'),inv:sum(inv,'amount'),fines:fn.length,finesAmt:sum(fn,'amount'),
- util:V.length?Math.round(w/V.length*100):0,need:V.filter(v=>['في الصيانة','حادث'].includes(v.status)).length}
+ util:V.length?Math.round(w/V.length*100):0,need:V.filter(v=>['في الصيانة','حادث'].includes(v.status)).length,rent:sum(inv.filter(x=>x.category=='إيجار'),'amount'),contract:sum(V,'monthly_rent'),docExp:dv('documents').filter(x=>x.expiry_date&&expDays(x.expiry_date)<=30).length,leaseSoon:V.filter(x=>x.lease_end&&expDays(x.lease_end)<=60).length}
 }
 function kpi(i,l,v,tint,f){return `<div class="card k" style="--t:${tint};--f:${f}"><div class="ci">${ic(i,22)}</div><div><b>${v}</b><span>${l}</span></div></div>`}
 function dash(){
  const m=new Date().toISOString().slice(0,7),s=stats(m),C=2*Math.PI*52,cols=['#0f8a64','#cf3a2e','#f15a22','#7d8fa0'];
  const cnt=ST.map(o=>dv('vehicles').filter(v=>v.status==o.split('|')[0]).length);
+ const al=[...dv('documents').filter(x=>x.expiry_date&&expDays(x.expiry_date)<=30).map(x=>({i:'shield',c:'#06b6d4',a:x.vehicle_id?nm(['vehicles','plate'],x.vehicle_id):nm(['drivers','name'],x.driver_id),b:p(V[x.doc_type]||x.doc_type),d:x.expiry_date})),...dv('vehicles').filter(x=>x.lease_end&&expDays(x.lease_end)<=60).map(x=>({i:'clock',c:'#f59e0b',a:x.plate,b:p(L.lease_end),d:x.lease_end}))].sort((a,b)=>a.d.localeCompare(b.d)).slice(0,7);
+ const ms=[...Array(6)].map((_,i)=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-5+i);return d.toISOString().slice(0,7)});
+ const vs=ms.map(x=>sum(inM(dv('invoices'),x),'amount')+sum(inM(dv('incidents'),x),'repair_cost')+sum(inM(dv('fines'),x),'amount')),mx=Math.max(...vs,1);
+ const bars=vs.map((v,i)=>{const h=Math.round(v/mx*95);return `<rect x="${i*48+12}" y="${112-h}" width="30" height="${Math.max(h,2)}" rx="8" fill="${i==5?'#f15a22':'#f7b79d'}"/><text x="${i*48+27}" y="130" text-anchor="middle" font-size="10" fill="#667a89">${ms[i].slice(5)}</text>`}).join('');
  shell(`<div class="top"><h2>${t('dash')}</h2></div>
  <div class="hero"><div class="card ring"><svg width="124" height="124" viewBox="0 0 124 124"><circle cx="62" cy="62" r="52" fill="none" stroke="#24506f" stroke-width="12"/><circle cx="62" cy="62" r="52" fill="none" stroke="#f15a22" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-s.util/100)}" transform="rotate(-90 62 62)"/><text x="62" y="70" text-anchor="middle" font-size="26" font-weight="700" fill="#fff">${s.util}%</text></svg><div><small>${t('util')}</small><b>${s.work} / ${s.total}</b></div></div>
- <div class="card stat"><h4>${t('fleetStatus')}</h4><div class="bar">${cnt.map((c,i)=>c?`<i style="flex:${c};background:${cols[i]}"></i>`:'').join('')||''}</div><div class="lg">${ST.map((o,i)=>`<span style="--c:${cols[i]}">${p(o)}: <b>${cnt[i]}</b></span>`).join('')}</div></div></div>
- <div class="kpis">${kpi('car',t('total'),s.total,'#e6eef5','#24506f')}${kpi('alert',t('inc'),s.inc,'#fbe2df','#cf3a2e')}${kpi('wrench',t('incCost'),money(s.incCost),'#fdf3d8','#b7791f')}${kpi('receipt',t('inv'),money(s.inv),'#dcf3ea','#0f8a64')}${kpi('gauge',t('fines'),dv('fines').filter(x=>x.status!='مسددة').length,'#fbe2df','#cf3a2e')}${kpi('users',t('auth'),dv('drivers').filter(x=>x.auth_status!='تم التفويض').length,'#fdf3d8','#b7791f')}</div>
+ <div class="card stat"><h4>${t('fleetStatus')}</h4><div class="bar">${cnt.map((c,i)=>c?`<i style="flex:${c};background:${cols[i]}"></i>`:'').join('')}</div><div class="lg">${ST.map((o,i)=>`<span style="--c:${cols[i]}">${p(o)}: <b>${cnt[i]}</b></span>`).join('')}</div></div></div>
+ <div class="kpis">${kpi('car',t('total'),s.total,'#fff','#3b82f6')}${kpi('alert',t('inc'),s.inc,'#fff','#ef4444')}${kpi('wrench',t('incCost'),money(s.incCost),'#fff','#f59e0b')}${kpi('receipt',t('inv'),money(s.inv),'#fff','#14b8a6')}${kpi('car',t('k_rent'),money(s.contract),'#fff','#f15a22')}${kpi('shield',t('k_docs'),s.docExp,'#fff','#06b6d4')}${kpi('gauge',t('fines'),dv('fines').filter(x=>x.status!='مسددة').length,'#fff','#ec4899')}${kpi('users',t('auth'),dv('drivers').filter(x=>x.auth_status!='تم التفويض').length,'#fff','#8b5cf6')}</div>
+ <div class="two"><div class="card stat"><h4>${t('alerts')}</h4>${al.map(x=>`<div class="al-i"><span class="nt" style="--c:${x.c}">${ic(x.i,16)}</span><div style="flex:1"><b>${esc(x.a)}</b><small style="display:block;color:var(--mu)">${esc(x.b)}</small></div>${exp(x.d)}</div>`).join('')||`<div class="empty" style="padding:20px">${t('none')}</div>`}</div>
+ <div class="card stat"><h4>${t('trend')}</h4><svg viewBox="0 0 290 136" width="100%" role="img">${bars}</svg></div></div>
  <div class="top"><h2 style="font-size:18px">${t('open')}</h2></div>${tbl('incidents',dv('incidents').filter(x=>x.status!='مغلق').slice(0,8),0)}`);
  hook('#root');
 }
 
 function tbl(k,rows,act=1){
  const s=S[k],F=Object.fromEntries(s.f.map(f=>[f[0],f]));F.plate=F.plate||['plate','','text'];F.city=F.city||['city','','select'];const cols=isA()?[...s.c,'city']:s.c;
- if(!rows.length)return `<div class="box empty">${ic('inbox',40)}<div>${t('empty')}</div></div>`;
+ if(!rows.length)return `<div class="box empty"><span class="nt" style="--c:#94a3b8">${ic('inbox',34)}</span><div>${t('empty')}</div></div>`;
  return `<div class="box"><table><thead><tr>${cols.map(c=>`<th>${p(L[c])}</th>`).join('')}${act?'<th></th>':''}</tr></thead><tbody>${rows.map(r=>`<tr data-id="${r.id}">${cols.map((c,i)=>`<td>${cell(F[c],r[c],k,i==0)}</td>`).join('')}${act?`<td><div class="acts"><button class="btn ghost sm" data-e="${r.id}" title="${t('edit')}">${ic('edit',15)}</button><button class="btn red sm" data-d="${r.id}" title="${t('del')}">${ic('trash',15)}</button></div></td>`:''}</tr>`).join('')}</tbody></table></div>`;
 }
 function hook(root,k){
@@ -175,15 +202,35 @@ function hook(root,k){
  r.querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{if(!confirm(t('conf')))return;const{error}=await db.from(k).delete().eq('id',b.dataset.d);if(error)return toast(error.message);toast(t('deleted'));await load(k);list(k,$('#q')?.value)});
  r.querySelectorAll('[data-h]').forEach(a=>a.onclick=e=>{e.preventDefault();history(a.closest('tr').dataset.id)});
 }
+const CHIP={vehicles:'status',drivers:'auth_status',documents:'doc_type',handovers:'kind',incidents:'status',invoices:'category',fines:'status'},FLT={};
+const nn=(a,f)=>a.filter(f).length,ex30=x=>x.expiry_date&&expDays(x.expiry_date)<=30;
+const SUMS={
+ vehicles:a=>[['car',t('total'),a.length,'#3b82f6'],['check',p('عاملة|Active'),nn(a,x=>x.status=='عاملة'),'#0f8a64'],['receipt',t('s_rent'),money(sum(a,'monthly_rent')),'#f59e0b'],['clock',t('s_lease'),nn(a,x=>x.lease_end&&expDays(x.lease_end)<=60),'#ef4444']],
+ drivers:a=>[['users',t('s_total'),a.length,'#8b5cf6'],['check',t('s_auth'),nn(a,x=>x.auth_status=='تم التفويض'),'#0f8a64'],['clock',t('s_pend'),nn(a,x=>x.auth_status!='تم التفويض'),'#f59e0b']],
+ documents:a=>[['shield',t('s_total'),a.length,'#06b6d4'],['alert',t('s_exp'),nn(a,x=>x.expiry_date&&expDays(x.expiry_date)<0),'#ef4444'],['clock',t('s_soon'),nn(a,x=>ex30(x)&&expDays(x.expiry_date)>=0),'#f59e0b'],['check',t('s_valid'),nn(a,x=>!ex30(x)),'#0f8a64']],
+ handovers:a=>[['swap',t('s_total'),a.length,'#14b8a6'],['alert',t('s_unsigned'),nn(a,x=>x.signed!='نعم'),'#ef4444']],
+ incidents:a=>[['alert',t('s_open'),nn(a,x=>x.status!='مغلق'),'#ef4444'],['wrench',t('s_repair'),money(sum(a,'repair_cost')),'#f59e0b'],['receipt',t('s_share'),money(sum(a,'driver_share')),'#8b5cf6']],
+ invoices:a=>[['receipt',t('s_sum'),money(sum(a,'amount')),'#f59e0b'],['clock',t('s_rev'),nn(a,x=>x.status=='قيد المراجعة'),'#3b82f6'],['car',t('s_rentinv'),money(sum(a.filter(x=>x.category=='إيجار'),'amount')),'#14b8a6']],
+ fines:a=>[['gauge',t('s_unpaid'),nn(a,x=>x.status!='مسددة'),'#ef4444'],['receipt',t('s_unpaidamt'),money(sum(a.filter(x=>x.status!='مسددة'),'amount')),'#f59e0b']]};
 function list(k,q=''){
- const s=S[k];
- shell(`<div class="top"><h2>${p(s.t)}</h2><div class="sbox">${ic('search',16)}<input id="q" placeholder="${t('search')}" value="${esc(q)}"></div><button class="btn sig" id="add">${ic('plus',16)}${t('add')}</button></div><div id="tb"></div>`);
- const draw=()=>{const v=$('#q').value.trim().toLowerCase();
-  $('#tb').innerHTML=tbl(k,dv(k).filter(r=>!v||s.f.some(f=>String(f[2]=='ref'?nm(f[4],r[f[0]]):r[f[0]]??'').toLowerCase().includes(v))));hook('#tb',k)};
+ const s=S[k],fld=s.f.find(x=>x[0]==CHIP[k]);
+ shell(`<div class="top"><h2>${p(s.t)}</h2><div class="sbox">${ic('search',16)}<input id="q" placeholder="${t('search')}" value="${esc(q)}"></div><button class="btn sig" id="add">${ic('plus',16)}${t('add')}</button></div><div class="kpis">${SUMS[k](dv(k)).map(x=>kpi(x[0],x[1],x[2],'#fff',x[3])).join('')}</div><div class="chips" id="ch"></div><div id="tb"></div>`);
+ const draw=()=>{const v=$('#q').value.trim().toLowerCase(),F=FLT[k]||'',base=dv(k);
+  $('#ch').innerHTML=[['',t('allf'),base.length],...fld[4].map(o=>[o.split('|')[0],p(o),nn(base,r=>r[fld[0]]==o.split('|')[0])])].map(([val,lb,n])=>`<button class="chip ${F==val?'on':''}" data-c="${esc(val)}">${esc(lb)} · ${n}</button>`).join('');
+  $('#ch').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{FLT[k]=b.dataset.c;draw()});
+  $('#tb').innerHTML=tbl(k,base.filter(r=>(!F||r[fld[0]]==F)&&(!v||s.f.some(f=>String(f[2]=='ref'?nm(f[4],r[f[0]]):r[f[0]]??'').toLowerCase().includes(v)))));hook('#tb',k)};
  $('#q').oninput=draw;$('#add').onclick=()=>form(k);draw();
 }
 
 function modal(h){const o=document.createElement('div');o.className='ov';o.innerHTML=`<div class="md">${h}</div>`;o.onclick=e=>{if(e.target==o)o.remove()};document.body.append(o);return o}
+const ACC='image/*,.pdf,.xlsx,.xls,.csv,.doc,.docx';
+async function upFile(file,k){const path=`${k}/${crypto.randomUUID()}_${file.name.replace(/[^\w.]/g,'_')}`;const u=await db.storage.from('docs').upload(path,file);if(u.error)throw u.error;return db.storage.from('docs').getPublicUrl(path).data.publicUrl}
+async function attUpload(k,id,city,files){for(const f of files){try{const url=await upFile(f,'att');const{error}=await db.from('attachments').insert({table_name:k,record_id:id,file_url:url,file_name:f.name,city:city||null});if(error)throw error}catch(e){toast(e.message)}}}
+async function attList(el,k,id){const{data}=await db.from('attachments').select('*').eq('table_name',k).eq('record_id',id).order('created_at');
+ el.innerHTML=(data||[]).map(a=>`<div class="ai">${ic('file',15)}<a href="${esc(a.file_url)}" target="_blank" rel="noopener" style="flex:1">${esc(a.file_name||'file')}</a><button type="button" class="btn red sm" data-ad="${a.id}">${ic('trash',14)}</button></div>`).join('')||`<small style="color:var(--mu)">${t('none')}</small>`;
+ el.querySelectorAll('[data-ad]').forEach(b=>b.onclick=async()=>{await db.from('attachments').delete().eq('id',b.dataset.ad);attList(el,k,id)})}
+const attHtml=()=>`<div class="att w"><label>${ic('paperclip',14)} ${t('attach')}</label><div class="al"></div><input class="fa" type="file" multiple accept="${ACC}"></div>`;
+function attInit(root,k,id,city){const al=root.querySelector('.al');if(id)attList(al,k,id);else al.innerHTML='';root.querySelector('.fa').onchange=async e=>{if(!id)return;await attUpload(k,id,city,e.target.files);e.target.value='';attList(al,k,id)}}
 function form(k,r={}){
  const s=S[k];
  const inp=f=>{const[key,lb,ty,req,o]=f,v=r[key]??'';let el;
@@ -193,8 +240,8 @@ function form(k,r={}){
   else if(ty=='file')el=`<input id="f_${key}" type="file" accept="image/*,.pdf">${v?`<a href="${esc(v)}" target=_blank>${t('curFile')}</a>`:''}`;
   else el=`<input id="f_${key}" type="${ty}" value="${esc(v)}">`;
   return `<div class="${ty=='area'?'w':''}"><label>${p(lb)}${req?' *':''}</label>${el}</div>`};
- const o=modal(`<h3>${r.id?t('edit'):t('add')} — ${p(s.t)}</h3><div class="fg">${fl(k).map(inp).join('')}</div><div class="ft"><button class="btn sig" id="sv">${t('save')}</button><button class="btn ghost" id="cx">${t('cancel')}</button></div>`);
- o.querySelector('#cx').onclick=()=>o.remove();
+ const o=modal(`<h3>${r.id?t('edit'):t('add')} — ${p(s.t)}</h3><div class="fg">${fl(k).map(inp).join('')}${attHtml()}</div><div class="ft"><button class="btn sig" id="sv">${t('save')}</button><button class="btn ghost" id="cx">${t('cancel')}</button></div>`);
+ o.querySelector('#cx').onclick=()=>o.remove();attInit(o,k,r.id,r.city);
  o.querySelector('#sv').onclick=async e=>{
   const b=e.currentTarget;b.disabled=true;const row={};
   for(const f of fl(k)){const el=o.querySelector('#f_'+f[0]);let v=el.value;
@@ -203,33 +250,177 @@ function form(k,r={}){
     const path=`${k}/${crypto.randomUUID()}_${file.name.replace(/[^\w.]/g,'_')}`;const u=await db.storage.from('docs').upload(path,file);
     if(u.error){b.disabled=false;return toast(u.error.message)}v=db.storage.from('docs').getPublicUrl(path).data.publicUrl}
    row[f[0]]=v===''?null:v}
-  const{error}=r.id?await db.from(k).update(row).eq('id',r.id):await db.from(k).insert(row);
+  const q=r.id?await db.from(k).update(row).eq('id',r.id).select('id,city').single():await db.from(k).insert(row).select('id,city').single(),error=q.error;
   if(error){b.disabled=false;return toast(error.code=='23505'?t('dup'):error.message)}
+  if(!r.id&&q.data&&o.querySelector('.fa').files.length)await attUpload(k,q.data.id,q.data.city,o.querySelector('.fa').files);
   o.remove();toast(t('saved'));await load(k);render();
  };
 }
 
 function history(id){
- const v=dv('vehicles').find(x=>x.id==id),by=k=>D[k].filter(x=>x.vehicle_id==id),sv=x=>esc(p(V[x]||x||''));
+ const v=D.vehicles.find(x=>x.id==id),by=k=>D[k].filter(x=>x.vehicle_id==id),sv=x=>esc(p(V[x]||x||''));
  const ul=(k,fn)=>`<ul>${by(k).map(x=>`<li>${fn(x)}</li>`).join('')||`<li>${t('none')}</li>`}</ul>`;
  const tot=sum(by('invoices'),'amount')+sum(by('incidents'),'repair_cost')+sum(by('fines'),'amount');
- modal(`<h3>${t('file')}: <span class="plate">${esc(v.plate)}</span> ${esc(v.model)}</h3><div class="kpis">${kpi('receipt',t('totalCost'),money(tot),'#dcf3ea','#0f8a64')}${kpi('gauge',t('odo'),v.odometer??'—','#e6eef5','#24506f')}</div><div class="hist">
+ const info=[['lessor',v.lessor],['contract_no',v.contract_no],['lease_start',v.lease_start],['lease_end',v.lease_end?exp(v.lease_end):null],['monthly_rent',v.monthly_rent?money(v.monthly_rent):null],['chassis_no',v.chassis_no],['odometer',v.odometer]];
+ const o=modal(`<h3>${t('file')}: <span class="plate">${esc(v.plate)}</span> ${esc(v.model)}</h3><div class="kpis">${kpi('receipt',t('totalCost'),money(tot),'#fff','#0f8a64')}${kpi('shield',t('docsT'),by('documents').length,'#fff','#06b6d4')}</div>
+ <div class="hist"><h4>${t('leaseInfo')}</h4><div class="ig">${info.map(([k,x])=>`<div><small>${p(L[k])}</small><b>${x?(k=='lease_end'?x:esc(x)):'—'}</b></div>`).join('')}</div>
+ <h4>${t('docsT')}</h4>${ul('documents',x=>`${sv(x.doc_type)} ${esc(x.doc_no||'')} — ${exp(x.expiry_date)} ${x.file_img?`<a href="${esc(x.file_img)}" target="_blank" rel="noopener">${t('view')}</a>`:''}`)}
  <h4>${t('hs')}</h4>${ul('handovers',x=>`${x.date} — ${sv(x.kind)} — ${esc(nm(['drivers','name'],x.driver_id))}`)}
  <h4>${p(S.incidents.t)}</h4>${ul('incidents',x=>`${x.date} — ${sv(x.status)} — ${money(x.repair_cost)}`)}
  <h4>${p(S.invoices.t)}</h4>${ul('invoices',x=>`${x.date} — ${esc(x.supplier)} (${sv(x.category)}) — ${money(x.amount)}`)}
- <h4>${p(S.fines.t)}</h4>${ul('fines',x=>`${x.date} — ${money(x.amount)} — ${sv(x.status)}`)}</div>`);
+ <h4>${p(S.fines.t)}</h4>${ul('fines',x=>`${x.date} — ${money(x.amount)} — ${sv(x.status)}`)}</div><div class="fg" style="margin-top:14px">${attHtml()}</div>`);
+ attInit(o,'vehicles',id,v.city);
 }
 
 function report(){
  const m=window._m||new Date().toISOString().slice(0,7),s=stats(m);
- const rows=[['r_total',s.total],['r_work',s.work],['r_stop',s.stop],['r_out',s.out],['r_in',s.inn],['r_inc',s.inc],['r_incc',money(s.incCost)],['r_maint',money(s.maint)],['r_inv',money(s.inv)],['r_fines',`${s.fines} (${money(s.finesAmt)})`],['r_need',s.need],['r_util',s.util+'%']];
+ const rows=[['r_total',s.total],['r_work',s.work],['r_stop',s.stop],['r_out',s.out],['r_in',s.inn],['r_inc',s.inc],['r_incc',money(s.incCost)],['r_maint',money(s.maint)],['r_inv',money(s.inv)],['r_fines',`${s.fines} (${money(s.finesAmt)})`],['r_need',s.need],['r_util',s.util+'%'],['r_rent',money(s.rent)],['r_contract',money(s.contract)],['r_docs',s.docExp],['r_lease',s.leaseSoon]];
  const pv=dv('vehicles').map(v=>{const i=sum(inM(dv('invoices'),m).filter(x=>x.vehicle_id==v.id),'amount'),c=sum(inM(dv('incidents'),m).filter(x=>x.vehicle_id==v.id),'repair_cost'),f=sum(inM(dv('fines'),m).filter(x=>x.vehicle_id==v.id),'amount');return[v.plate,i,c,f,i+c+f]});
  shell(`<div class="top"><h2>${t('report')}</h2><input type="month" id="mm" value="${m}" style="width:170px" class="noprint"><button class="btn sig noprint" onclick="print()">${ic('print',16)}${t('print')}</button></div>
  <div class="box" style="margin-bottom:20px"><table><tbody>${rows.map(r=>`<tr><td>${t(r[0])}</td><td><b>${r[1]}</b></td></tr>`).join('')}</tbody></table></div>
  <div class="top"><h2 style="font-size:18px">${t('perCar')}</h2></div><div class="box"><table><thead><tr><th>${p(L.plate)}</th><th>${t('cInv')}</th><th>${t('cInc')}</th><th>${t('cFine')}</th><th>${t('cTot')}</th></tr></thead><tbody>${pv.map(r=>`<tr><td><span class="plate">${esc(r[0])}</span></td><td>${money(r[1])}</td><td>${money(r[2])}</td><td>${money(r[3])}</td><td><b>${money(r[4])}</b></td></tr>`).join('')}</tbody></table></div>`);
  $('#mm').onchange=e=>{window._m=e.target.value;report()};
 }
-function render(){if(page=='users'&&!isA())page='dash';page=='dash'?dash():page=='report'?report():page=='users'?users():list(page)}
+function render(){if(page=='users'&&!isA())page='dash';page=='dash'?dash():page=='report'?report():page=='users'?users():page=='import'?importPage():list(page)}
+
+/* ===== Excel import (smart: any template) ===== */
+const nz=s=>String(s??'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^a-z0-9\u0600-\u06FF]/g,'');
+const latin=s=>String(s??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+const nzp=s=>nz(latin(s)),dig=s=>latin(s).replace(/\D/g,'');
+const SYN0={plate:'رقم اللوحة,اللوحة,لوحة,السيارة,رقم السيارة,plate,plate number,plate no,vehicle,car,registration',model:'الموديل,الماركة,نوع السيارة,الطراز,make,model,brand,vehicle type',year:'سنة الصنع,سنة,year,model year',status:'الحالة,حالة,status,state',odometer:'قراءة العداد,العداد,الكيلومترات,odometer,mileage,km',city:'المدينة,مدينة,الفرع,city,branch',notes:'ملاحظات,ملاحظة,notes,remarks,comment',name:'اسم السائق,السائق,الاسم,اسم,name,driver name,driver',iqama_no:'رقم الإقامة,الإقامة,رقم الهوية,الهوية,iqama,iqama no,id number,national id',birth_date:'تاريخ الميلاد,الميلاد,birth date,dob,date of birth',absher_phone:'جوال أبشر,رقم الجوال,الجوال,جوال,موبايل,هاتف,phone,mobile,absher',auth_status:'حالة التفويض,التفويض,authorization,auth status',driver_name:'اسم السائق,السائق,driver name,driver',driver_iqama:'رقم الإقامة,الإقامة,رقم الهوية,iqama,id number',kind:'نوع العملية,العملية,النوع,نوع,type,kind,operation',date:'التاريخ,تاريخ,date',fuel:'مستوى الوقود,الوقود,fuel',accessories:'الملحقات,المعدات,accessories,equipment',damages:'الأضرار,الاضرار,تلفيات,damage,damages',signed:'توقيع السائق,التوقيع,signed,signature',najm_ref:'رقم نجم,رقم البلاغ,بلاغ نجم,نجم,najm,report no',insurer:'شركة التأمين,التأمين,insurer,insurance',repair_cost:'تكلفة الإصلاح,تكلفة الاصلاح,الاصلاح,التكلفة,repair cost,repair,cost',driver_share:'التحمل المالي,التحمل,driver share,deductible',supplier:'اسم المورد,المورد,supplier,vendor',category:'التصنيف,البند,نوع المصروف,النوع,category,expense type,type',invoice_no:'رقم الفاتورة,الفاتورة,invoice no,invoice number,invoice',amount:'المبلغ,الإجمالي,الاجمالي,القيمة,التكلفة,amount,total,price,value',lessor:'شركة التأجير,المؤجر,الشركة المؤجرة,lessor,leasing company',contract_no:'رقم العقد,العقد,contract no,contract',lease_start:'بداية العقد,تاريخ بداية العقد,lease start,contract start',lease_end:'نهاية العقد,تاريخ نهاية العقد,انتهاء العقد,lease end,contract end',monthly_rent:'الإيجار الشهري,الايجار الشهري,قيمة الإيجار,الايجار,rent,monthly rent',chassis_no:'رقم الهيكل,الشاسيه,chassis,vin',doc_type:'نوع الوثيقة,الوثيقة,doc type,document type,document',doc_no:'رقم الوثيقة,رقم الاستمارة,رقم الرخصة,document no',issue_date:'تاريخ الإصدار,issue date',expiry_date:'تاريخ الانتهاء,تاريخ انتهاء,انتهاء,expiry date,expiry,expiration',_fine:'رقم المخالفة,المخالفة,مخالفة,violation,fine'};
+const SYN=Object.fromEntries(Object.entries(SYN0).map(([k,v])=>[k,v.split(',').map(nz)]));
+const ALLS=[...new Set(Object.values(SYN).flat())];
+const anyOf=(h,...a)=>a.some(x=>h.has(x));
+const IM={
+ vehicles:{f:['plate','model','year','status','odometer','lessor','contract_no','lease_start','lease_end','monthly_rent','chassis_no','city','notes'],ok:h=>h.has('plate')&&anyOf(h,'model','year','odometer','monthly_rent','lease_end','lessor')},
+ drivers:{f:['name','iqama_no','birth_date','absher_phone','auth_status','city','notes'],ok:h=>h.has('name')&&anyOf(h,'iqama_no','absher_phone','birth_date')},
+ handovers:{f:['plate','driver_name','driver_iqama','kind','date','odometer','fuel','accessories','damages','signed','notes'],ok:h=>h.has('plate')&&anyOf(h,'kind','fuel','accessories','damages','signed')},
+ incidents:{f:['plate','driver_name','driver_iqama','date','najm_ref','insurer','status','repair_cost','driver_share','notes'],ok:h=>h.has('plate')&&anyOf(h,'najm_ref','insurer','repair_cost','driver_share')},
+ invoices:{f:['plate','supplier','category','invoice_no','date','amount','status','notes'],ok:h=>h.has('plate')&&h.has('amount')&&anyOf(h,'supplier','invoice_no','category')},
+ fines:{f:['plate','driver_name','driver_iqama','date','amount','status','_fine','notes'],ok:h=>h.has('plate')&&h.has('amount')&&h.has('_fine')},
+ documents:{f:['plate','doc_type','doc_no','issue_date','expiry_date','notes'],ok:h=>h.has('plate')&&anyOf(h,'doc_type','expiry_date')}};
+const ORDER=['vehicles','drivers','documents','handovers','incidents','invoices','fines'],HP=['incidents','fines','invoices','handovers','documents','drivers','vehicles'];
+const KEY={vehicles:'plate',drivers:'name',handovers:'plate',incidents:'plate',invoices:'plate',fines:'plate',documents:'plate'};
+const HINT={vehicles:/سيار|مركب|vehicle|car|fleet|اسطول|أسطول/i,drivers:/سائق|driver|موظف/i,handovers:/استلام|تسليم|handover|delivery/i,incidents:/حواد|حادث|incident|accident|مطالب/i,invoices:/فواتير|فاتور|مصاريف|مصروف|invoice|expense|صيانة|maintenance/i,fines:/مخالف|fine|violation/i,documents:/وثيق|وثائق|رخص|تراخيص|استمار|document|licen[sc]e|registration/i};
+const XL={driver_name:'اسم السائق|Driver name',driver_iqama:'رقم إقامة السائق|Driver iqama no.',_fine:'رقم المخالفة|Violation ref'};
+const FL=f=>p(L[f]||XL[f]||f);
+const EX0={'عاملة':'شغال,يعمل,تعمل,active,working,متاح,نشط,available','متوقفة':'موقوف,متوقف,stopped,inactive,معطل','في الصيانة':'صيانه,ورشه,بالصيانه,maintenance,workshop','حادث':'accident,crash','استلام':'receive,received,pickup,استلم','تسليم':'handover,deliver,delivered,return,سلم','مسددة':'مسدد,تم السداد,paid,مدفوع','غير مسددة':'غير مسدد,unpaid,مستحق,لم يسدد,due','تم التفويض':'مفوض,authorized,تمت','قيد الاستكمال':'pending,ناقص','مغلق':'closed,انتهى,منتهي','مفتوح':'open,جاري','قيد الإصلاح':'repair,في الورشه','بانتظار التعويض':'awaiting,تعويض','معتمدة':'approved,معتمد','مصروفة':'paid,صرف,مصروف','مرفوضة':'rejected,مرفوض','قيد المراجعة':'review,مراجعه,pending','نعم':'yes,y,موقع,signed,تم','لا':'no,n,غير موقع','صيانة':'service,maintenance','قطع غيار':'قطع,spare,parts','إطارات':'اطارات,كفرات,tyre,tire,tires','زيوت':'زيت,oil','بطاريات':'بطاريه,battery','وقود':'fuel,بنزين,diesel','إيجار':'ايجار,rent,lease,تاجير','تأمين':'insurance,تامين','رسوم وتراخيص':'رسوم,fees,تراخيص','رخصة السيارة (الاستمارة)':'استمارة,رخصه السياره,registration','تأمين المركبة':'تامين,insurance','الفحص الدوري':'فحص,inspection','بطاقة التشغيل':'بطاقه تشغيل,operating card','عقد الإيجار':'عقد,lease','رخصة قيادة':'رخصه قياده,driving,license','إقامة':'iqama,اقامه'};
+const EX=Object.entries(EX0).flatMap(([v,l])=>l.split(',').map(s=>[nz(s),v]));
+function cSel(v,opts){
+ const x=nz(v);if(!x)return null;const vals=opts.map(o=>o.split('|')[0]);
+ const ent=[...opts.flatMap(o=>o.split('|').map(s=>[nz(s),o.split('|')[0]])),...EX.filter(e=>vals.includes(e[1]))].filter(e=>e[0]).sort((a,b)=>b[0].length-a[0].length);
+ return (ent.find(e=>e[0]==x)||ent.find(e=>e[0].length>=3&&x.includes(e[0])))?.[1]??null}
+const cNum=v=>{if(typeof v=='number')return v;const x=parseFloat(latin(v).replace(/,/g,'').replace(/[^\d.\-]/g,''));return isNaN(x)?null:x};
+const cDate=v=>{
+ if(typeof v=='number'&&v>20000&&v<80000)return new Date(Math.round((v-25569)*864e5)).toISOString().slice(0,10);
+ const m=latin(v).match(/(\d{1,4})[\/\-.](\d{1,2})[\/\-.](\d{1,4})/);if(!m)return null;
+ let y,mo=+m[2],d;if(m[1].length==4){y=+m[1];d=+m[3]}else{d=+m[1];y=+m[3];if(y<100)y+=2000}
+ if(y<1900||y>2100||mo<1||mo>12||d<1||d>31)return null;
+ return `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`};
+function autoMap(hdr,T){
+ const cand=[];
+ hdr.forEach((h,i)=>{const x=nz(h);if(!x)return;IM[T].f.forEach(f=>SYN[f].forEach(s=>{let sc=0;if(x==s)sc=3;else if(s.length>=4&&x.includes(s))sc=2;else if(x.length>=5&&s.includes(x))sc=1;if(sc)cand.push([sc*100+s.length,i,f])}))});
+ cand.sort((a,b)=>b[0]-a[0]);const m={},uc=new Set(),uf=new Set();
+ for(const[,i,f]of cand){if(uc.has(i)||uf.has(f))continue;uc.add(i);uf.add(f);m[i]=f}
+ return m}
+const hdrScore=r=>r.reduce((n,c)=>{const x=nz(c);return n+(x&&ALLS.some(s=>x==s||(s.length>=4&&x.includes(s)))?1:0)},0);
+let IMP={blocks:[],city:''};
+async function readFile(file){
+ const wb=XLSX.read(await file.arrayBuffer(),{type:'array',codepage:65001});
+ IMP.blocks=[];
+ for(const sn of wb.SheetNames){
+  const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',blankrows:false});
+  if(rows.length<2)continue;
+  let hi=0,best=-1;for(let i=0;i<Math.min(10,rows.length);i++){const sc=hdrScore(rows[i]);if(sc>best){best=sc;hi=i}}
+  const hdr=rows[hi].map(String),data=rows.slice(hi+1).filter(r=>r.some(c=>String(c).trim()!==''));
+  if(!data.length)continue;
+  const hint=HP.find(T=>HINT[T].test(sn));let n=0;
+  for(const T of ORDER){if(hint&&!['vehicles','drivers'].includes(hint)&&T!=hint)continue;const m=autoMap(hdr,T),has=new Set(Object.values(m));
+   if(T==hint?has.has(KEY[T]):IM[T].ok(has)){IMP.blocks.push({sn,T,hdr,data,m,on:true});n++}}
+  if(!n)IMP.blocks.push({sn,T:'',hdr,data,m:{},on:false});
+ }}
+function tmpl(){
+ const wb=XLSX.utils.book_new();
+ ORDER.forEach(T=>{const h=IM[T].f.filter(f=>f!='city'||isA()).map(FL),ws=XLSX.utils.aoa_to_sheet([h]);ws['!cols']=h.map(()=>({wch:20}));XLSX.utils.book_append_sheet(wb,ws,p(S[T].t).replace(/[\\\/?*\[\]:]/g,'').slice(0,31))});
+ XLSX.writeFile(wb,'Anan-Fleet-Template.xlsx')}
+function importPage(){
+ shell(`<div class="top"><h2>${t('import')}</h2><button class="btn ghost" id="tp">${ic('download',16)}${t('tmpl')}</button></div>
+ ${isA()?`<div class="card pad" style="margin-bottom:14px;max-width:360px"><label class="lab">${t('impCity')} *</label><select id="ic"><option value="">${t('choose')}</option>${CITIES.map(c=>`<option value="${c.split('|')[0]}" ${IMP.city==c.split('|')[0]?'selected':''}>${p(c)}</option>`).join('')}</select></div>`:''}
+ <label class="drop" id="dz" for="fi">${ic('upload',36)}<b>${t('drop')}</b><span>${t('dropSub')}</span><input id="fi" type="file" accept=".xlsx,.xls,.csv" hidden></label><div id="pv"></div>`);
+ $('#tp').onclick=tmpl;if($('#ic'))$('#ic').onchange=e=>IMP.city=e.target.value;
+ const take=async f=>{if(!f)return;$('#pv').innerHTML=`<div class="empty">${t('reading')}</div>`;try{await readFile(f);drawPv()}catch(e){toast(e.message)}};
+ $('#fi').onchange=e=>take(e.target.files[0]);
+ const dz=$('#dz');dz.ondragover=e=>{e.preventDefault();dz.classList.add('hov')};dz.ondragleave=()=>dz.classList.remove('hov');dz.ondrop=e=>{e.preventDefault();dz.classList.remove('hov');take(e.dataTransfer.files[0])};
+ if(IMP.blocks.length)drawPv();
+}
+const blk=(b,bi)=>{const T=b.T,fs=T?IM[T].f:[],mapped=Object.keys(b.m).filter(c=>b.m[c]);
+ return `<div class="card blk ${b.on?'':'off'}"><div class="bh"><label class="ck"><input type="checkbox" data-on="${bi}" ${b.on?'checked':''}></label><span class="nt" style="--c:${NC[T]||'#94a3b8'}">${ic(T?S[T].i:'sheet',18)}</span><div><b>${esc(b.sn)}</b><small>${b.data.length} ${t('rows')}${T?'':' — '+t('unrec')}</small></div><select data-t="${bi}"><option value="">${t('assign')}</option>${ORDER.map(x=>`<option value="${x}" ${x==T?'selected':''}>${p(S[x].t)}</option>`).join('')}</select></div>
+ ${T?`<div class="map">${b.hdr.map((h,i)=>String(h).trim()?`<div class="mc"><small title="${esc(h)}">${esc(h)}</small><select data-m="${bi}:${i}"><option value="">${t('ignore')}</option>${fs.map(f=>`<option value="${f}" ${b.m[i]==f?'selected':''}>${FL(f)}</option>`).join('')}</select></div>`:'').join('')}</div>
+ <div class="box" style="margin-top:12px"><table><thead><tr>${mapped.map(c=>`<th>${FL(b.m[c])}</th>`).join('')}</tr></thead><tbody>${b.data.slice(0,3).map(r=>`<tr>${mapped.map(c=>`<td>${esc(r[c])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:''}</div>`};
+function drawPv(){
+ const B=IMP.blocks;
+ if(!B.length){$('#pv').innerHTML=`<div class="empty">${t('none')}</div>`;return}
+ $('#pv').innerHTML=`<div class="top" style="margin-top:22px"><h2 style="font-size:18px">${t('found')}</h2><button class="btn sig" id="go2">${ic('check',16)}${t('startImp')}</button></div>${B.map(blk).join('')}`;
+ $('#go2').onclick=doImport;
+ document.querySelectorAll('[data-on]').forEach(c=>c.onchange=()=>{B[c.dataset.on].on=c.checked;c.closest('.blk').classList.toggle('off',!c.checked)});
+ document.querySelectorAll('[data-t]').forEach(s=>s.onchange=()=>{const b=B[s.dataset.t];b.T=s.value;b.m=b.T?autoMap(b.hdr,b.T):{};b.on=!!b.T;drawPv()});
+ document.querySelectorAll('[data-m]').forEach(s=>s.onchange=()=>{const[bi,ci]=s.dataset.m.split(':'),b=B[bi];if(s.value)for(const k in b.m)if(b.m[k]==s.value)delete b.m[k];b.m[ci]=s.value;drawPv()});
+}
+async function doImport(){
+ const B=IMP.blocks.filter(b=>b.on&&b.T);
+ if(!B.length)return toast(t('nothing'));
+ if(isA()&&!IMP.city)return toast(t('pickCity'));
+ const rep={},btn=$('#go2'),rec=(T,k,n=1)=>{(rep[T]??={ins:0,upd:0,skip:0,err:0,msgs:[]})[k]+=n},msg=(T,m)=>{rep[T].msgs.length<6&&rep[T].msgs.push(m)};
+ btn.disabled=true;btn.textContent='…';
+ await Promise.all(ORDER.map(load));
+ const DEF={vehicles:{status:'عاملة'},drivers:{auth_status:'قيد الاستكمال'},handovers:{kind:'استلام',signed:'لا'},incidents:{status:'مفتوح'},invoices:{supplier:'غير محدد',status:'قيد المراجعة'},fines:{status:'غير مسددة'},documents:{doc_type:'أخرى'}};
+ const conv=(T,f,v)=>{const d=S[T].f.find(x=>x[0]==f),ty=d?d[2]:'text';
+  if(ty=='number')return cNum(v);if(ty=='date')return cDate(v);if(ty=='select')return cSel(v,d[4]);
+  if(f=='iqama_no'||f=='driver_iqama')return dig(v)||null;
+  if(f=='absher_phone'){let x=dig(v);if(x.length==9&&x[0]=='5')x='0'+x;return x||null}
+  return typeof v=='number'?String(v):String(v).trim()||null};
+ const rowsOf=b=>b.data.map((r,i)=>{const o={};Object.entries(b.m).forEach(([c,f])=>{const v=r[c];if(!f||f=='_fine'||v===''||v==null)return;const x=conv(b.T,f,v);if(x!=null)o[f]=x});return{o,n:i+1}}).filter(x=>Object.keys(x.o).length);
+ const put=async(T,arr)=>{for(let i=0;i<arr.length;i+=100){const ch=arr.slice(i,i+100);btn.textContent=`${p(S[T].t)} ${Math.min(i+100,arr.length)}/${arr.length}`;
+  const{error}=await db.from(T).insert(ch);if(!error){rec(T,'ins',ch.length);continue}
+  for(const row of ch){const r=await db.from(T).insert(row);if(r.error){rec(T,'err');msg(T,r.error.message)}else rec(T,'ins')}}};
+ const upsert=async(T,rows,keyOf,find)=>{
+  const ins=[],upd=[],seen=new Set();
+  for(const{o,n}of rows){const k=keyOf(o);if(!k){rec(T,'err');msg(T,`#${n}: ${t('noKey')}`);continue}
+   if(seen.has(k)){rec(T,'skip');continue}seen.add(k);const ex=find(o);
+   if(ex){const pt={};for(const[a,v]of Object.entries(o))if(a!='city'&&a!='plate')pt[a]=v;Object.keys(pt).length?upd.push([ex.id,pt]):rec(T,'skip')}
+   else ins.push({...DEF[T],...(T=='vehicles'?{model:'غير محدد'}:{}),...o,city:isA()?(o.city||IMP.city):undefined})}
+  await put(T,ins);
+  for(let i=0;i<upd.length;i+=15)await Promise.all(upd.slice(i,i+15).map(([id,pt])=>db.from(T).update(pt).eq('id',id).then(r=>r.error?(rec(T,'err'),msg(T,r.error.message)):rec(T,'upd'))))};
+ let vm=new Map(D.vehicles.map(v=>[nzp(v.plate),v]));
+ const vrows=B.filter(b=>b.T=='vehicles').flatMap(rowsOf);
+ if(vrows.length)await upsert('vehicles',vrows,o=>o.plate?nzp(o.plate):'',o=>vm.get(nzp(o.plate)));
+ const dI=new Map(),dN=new Map();D.drivers.forEach(d=>{if(d.iqama_no)dI.set(dig(d.iqama_no),d);dN.set(nz(d.name),d)});
+ const drows=B.filter(b=>b.T=='drivers').flatMap(rowsOf);
+ if(drows.length)await upsert('drivers',drows,o=>o.iqama_no?'i'+o.iqama_no:o.name?'n'+nz(o.name):'',o=>(o.iqama_no&&dI.get(o.iqama_no))||(o.name&&dN.get(nz(o.name))));
+ await Promise.all([load('vehicles'),load('drivers')]);vm=new Map(D.vehicles.map(v=>[nzp(v.plate),v]));
+ const kids=B.filter(b=>!['vehicles','drivers'].includes(b.T)),plates=new Map();
+ kids.forEach(b=>rowsOf(b).forEach(({o})=>{if(o.plate&&!vm.has(nzp(o.plate)))plates.set(nzp(o.plate),String(o.plate).trim())}));
+ if(plates.size){await put('vehicles',[...plates.values()].map(pl=>({plate:pl,model:'غير محدد',status:'عاملة',city:isA()?IMP.city:undefined})));await load('vehicles');vm=new Map(D.vehicles.map(v=>[nzp(v.plate),v]))}
+ const dm2=new Map(),dn2=new Map();D.drivers.forEach(d=>{if(d.iqama_no)dm2.set(dig(d.iqama_no),d.id);dn2.set(nz(d.name),d.id)});
+ const drv=o=>(o.driver_iqama&&dm2.get(o.driver_iqama))||(o.driver_name&&dn2.get(nz(o.driver_name)))||null;
+ const KF={handovers:r=>[r.vehicle_id,r.date,r.kind,r.odometer],incidents:r=>[r.vehicle_id,r.date,r.najm_ref],invoices:r=>[r.vehicle_id,r.invoice_no,r.supplier,r.amount,r.date],fines:r=>[r.vehicle_id,r.date,r.amount],documents:r=>[r.vehicle_id,r.doc_type,r.doc_no,r.expiry_date]};
+ const kk=(T,r)=>KF[T](r).map(x=>x??'').join('|');
+ for(const T of ['documents','handovers','incidents','invoices','fines']){
+  const bl=kids.filter(b=>b.T==T);if(!bl.length)continue;
+  const ex=new Set(D[T].map(r=>kk(T,r))),ins=[];
+  for(const b of bl)for(const{o,n}of rowsOf(b)){
+   if(!o.plate){rec(T,'err');msg(T,`#${n}: ${t('noPlate')}`);continue}
+   const v=vm.get(nzp(o.plate));if(!v){rec(T,'err');msg(T,`#${n}: ${o.plate}`);continue}
+   const row={...DEF[T]};for(const[a,x]of Object.entries(o))if(!['plate','driver_name','driver_iqama'].includes(a))row[a]=x;
+   row.vehicle_id=v.id;if(T!='invoices')row.driver_id=drv(o);
+   const k=kk(T,row);if(ex.has(k)){rec(T,'skip');continue}ex.add(k);ins.push(row)}
+  await put(T,ins)}
+ await Promise.all(ORDER.map(load));IMP.blocks=[];
+ const cards=Object.entries(rep).map(([T,r])=>`<div class="card"><span class="nt" style="--c:${NC[T]}">${ic(S[T].i,18)}</span><h4>${p(S[T].t)}</h4><p>${t('i_ins')}: <b>${r.ins}</b> · ${t('i_upd')}: <b>${r.upd}</b> · ${t('i_skip')}: <b>${r.skip}</b> · ${t('i_err')}: <b>${r.err}</b></p></div>`).join('');
+ const errs=Object.entries(rep).flatMap(([T,r])=>r.msgs.map(m=>`${p(S[T].t)} ${esc(m)}`));
+ $('#pv').innerHTML=`<div class="top" style="margin-top:22px"><h2 style="font-size:18px">${t('impDone')}</h2><button class="btn ghost" id="ag">${ic('upload',16)}${t('again')}</button></div><div class="res">${cards||`<div class="empty">${t('none')}</div>`}</div>${errs.length?`<div class="card errs">${errs.join('<br>')}</div>`:''}`;
+ $('#ag').onclick=()=>importPage();toast(t('impDone'));
+}
 
 async function users(){
  const{data}=await db.from('profiles').select('*').order('created_at');
